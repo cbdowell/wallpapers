@@ -1,0 +1,17 @@
+!  ___      __ _
+! | _ \___ / _(_)
+! |   / _ \  _| |
+! |_|_\___/_| |_|
+!
+! Author: Christopher Dowell
+! License: MIT
+
+! rofi.modi: drun,ssh
+! rofi.terminal: urxvt
+
+rofi.theme: ~/.cache/wal/colors-rofi.rasi
+
+rofi.modi: window,run,ssh,drun,combi
+rofi.lines: 10
+rofi.case-sensitive: false
+rofi.matching: fuzzy

@@ -1,0 +1,141 @@
+####################
+# Account Settings #
+####################
+
+# Mailbox
+set mbox_type=Maildir
+set folder=$HOME/mail
+set spoolfile=+Havenaut/INBOX
+set header_cache=~/.hcache
+source ~/.config/mutt/mailboxes
+
+# Personal
+set realname='Peter Hogg'
+
+# Sending
+set envelope_from=yes
+set sendmail_wait = -1
+
+
+####################
+# General Settings #
+####################
+
+# Basic
+set timeout=3
+set mail_check=0
+set wait_key=no
+set delete
+set pipe_decode
+set mailcap_path=~/.config/mutt/mailcap
+set query_command="khard email --parsable '%s'"
+set forward_format="Fwd: %s"
+set use_domain=no
+set user_agent=no
+set sleep_time=0
+
+# Composing
+set edit_headers=yes
+set fast_reply
+set askcc
+set text_flowed=yes
+
+# HTML Messages
+bind attach <return> view-mailcap
+auto_view text/html text/calendar application/ics
+alternative_order text/plain text/enriched text/html
+
+# Printing
+set print_command="$HOME/.config/mutt/print.sh"
+macro index,pager P "<pipe-message>$HOME/.config/mutt/print.sh -s"
+
+# PGP
+set crypt_use_gpgme = yes
+set crypt_replyencrypt = yes
+set crypt_replysign = yes
+set crypt_replysignencrypted = yes
+set crypt_verify_sig = yes
+set pgp_auto_decode=yes
+
+# Status Bar
+set status_chars=" *%A"
+set status_format="───[ Folder: %f ]───[%r%m messages%?n? (%n new)?%?d? (%d to delete)?%?t? (%t tagged)? ]───%>─%?p?( %p postponed )?───"
+
+# Index View
+set date_format="%Y-%m-%d %H:%M"
+set index_format="[%Z]  %D  %-20.20F  %s"
+set sort=threads
+set sort_aux=reverse-last-date-received
+set uncollapse_jump
+
+# Pager View
+set pager_index_lines = 10
+set pager_context = 3
+set pager_stop
+
+# Sidebar
+set mail_check_stats = yes
+set sidebar_format = "%B%?F? [%F]?%* %?N?%N/?%S"
+set sidebar_visible=yes
+set sidebar_width=32
+set sidebar_divider_char=' │ '
+set sidebar_short_path
+
+
+################
+# Key Bindings #
+################
+
+source ~/.config/mutt/vim-keybindings.rc
+
+# Index
+bind index R        group-reply
+bind index <tab>    sync-mailbox
+bind index <space>  collapse-thread
+bind index \\       collapse-all
+
+# Pager
+bind pager R    group-reply
+
+# Sidebar
+bind index,pager <down>   sidebar-next
+bind index,pager <up>     sidebar-prev
+bind index,pager <right>  sidebar-open
+
+# Sync mail
+macro index o "<shell-escape>mailsync<enter>"
+
+# Archive mail
+macro index,pager A "s+Archive<enter>"
+
+# Add sender to address book
+macro index,pager a "<pipe-message>khard add-email<return>" "add the sender email address to khard"
+
+# Bind ; to ctrl-t in editor mode
+macro editor ";" \Ct
+
+# Save message to another mailbox
+macro index s "<save-message>?<toggle-mailboxes>"
+
+# Extract URLs
+macro index,pager \cl "<pipe-message> urlscan<Enter>"
+macro attach,compose \cl "<pipe-entry> urlscan<Enter>"
+
+
+##########
+# Colors #
+##########
+
+source ~/.config/mutt/mutt-colors-solarized-dark-16.muttrc
+
+
+############
+# Accounts #
+############
+
+# Default to havenaut.
+source ~/.config/mutt/havenaut.muttrc
+
+# Folder Hooks
+folder-hook Havenaut/* source ~/.config/mutt/havenaut.muttrc
+folder-hook TAD/*   source ~/.config/mutt/tad.muttrc

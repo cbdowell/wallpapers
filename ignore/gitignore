@@ -1,0 +1,12 @@
+# Python #
+##########
+__pycache__/
+*.py[cod]
+*.egg*
+build/
+dist/
+
+
+# Editors #
+###########
+.*.sw[a-z]

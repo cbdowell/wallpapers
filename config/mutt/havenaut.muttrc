@@ -1,0 +1,17 @@
+#####################
+# Havenaut Settings #
+#####################
+
+# Mailbox
+set postponed = "+Havenaut/Drafts"
+set record = "+Havenaut/Sent Items"
+
+# Personal
+set from='peter@havenaut.net'
+set reverse_name=yes
+alternates pm@pig-monkey.com peterhogg@fastmail.fm
+set signature=~/.config/mutt/sigs/havenaut
+
+# Sending
+set hostname="mail.havenaut.net"
+set sendmail='msmtpq'

@@ -1,0 +1,20 @@
+
+[user]
+
+	name         = cbdowell
+	email        = cbdowell@gmail.com
+
+
+[core]
+	editor       = nano
+	excludesfile = /home/zoro/.config/git/ignore
+
+
+[init]
+
+	templatedir  = /home/zoro/.config/git/templates
+
+
+[ghq]
+
+	root         = /home/zoro/Workspace

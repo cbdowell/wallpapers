@@ -1,0 +1,122 @@
+{
+    /**
+     * settings: breadcrumbs
+     */
+    "breadcrumbs.enabled": true,
+
+
+    /**
+     * settings: editors
+     */
+    "editor.fontSize": 14,
+    "editor.formatOnSave": false,
+    "editor.lineNumbers": "relative",
+    "editor.minimap.maxColumn": 80,
+    "editor.minimap.renderCharacters": false,
+    "editor.fontLigatures": true,
+    "editor.fontFamily": "FuraCode Nerd Font",
+    "editor.minimap.enabled": false,
+    "editor.selectionClipboard": false,
+
+
+    /**
+     * settings: explorers
+     */
+    "explorer.confirmDelete": false,
+    "explorer.confirmDragAndDrop": false,
+    "explorer.openEditors.visible": 0,
+
+
+    /**
+     * settings: extensions
+     */
+    "extensions.ignoreRecommendations": true,
+
+
+    /**
+     * settings: files
+     */
+    "files.autoSave": "onFocusChange",
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/.mypy_cache": true,
+        "**/.vscode": false,
+        "**/__pycache__": true
+    },
+    "files.associations": {
+        "config": "i3",
+        "*.base": "ini",
+        "i3": "i3",
+        "*.i3": "i3"
+    },
+
+
+    /**
+     * formatter: shell scripts
+     */
+    "[shellscript]": {
+        "editor.defaultFormatter": "shakram02.bash-beautify"
+    },
+
+
+    /**
+     * formatter: json
+     */
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+
+
+    /**
+     * settings: rust
+     */
+    "rust-client.trace.server": "verbose",
+    "rust-client.updateOnStartup": true,
+    "rust-client.useWSL": true,
+    "rust.all_features": true,
+    "rust.build_on_save": true,
+ 
+ 
+    /**
+     * settings: terminals
+     */
+    "terminal.integrated.fontFamily": "FuraCode Nerd Font",
+    "terminal.integrated.fontSize": 12,
+    "terminal.integrated.fontWeight": "bold",
+    "terminal.integrated.shell.linux": "/usr/bin/fish",
+  
+
+    /**
+     * settings: vsintellicode
+     */
+    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+
+    /**
+     * wal-themes
+     */
+    "walTheme.autoUpdate": true,
+
+
+    /**
+     * windows
+     */
+    "window.titleBarStyle": "custom",
+
+
+    /**
+     * settings: workbench
+     */
+    "workbench.editor.closeEmptyGroups": false,
+    "workbench.editor.closeOnFileDelete": true,
+    "workbench.startupEditor": "newUntitledFile",
+    "workbench.settings.editor": "json",
+    "workbench.settings.useSplitJSON": true,
+    "workbench.statusBar.feedback.visible": false,
+    "workbench.colorTheme": "Wal", 
+    "workbench.iconTheme": "vscode-great-icons",
+    "window.zoomLevel": 1
+}

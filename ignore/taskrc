@@ -1,0 +1,15 @@
+# Files
+data.location=~/.tasks
+
+# Colors
+include ~/.taskwarrior/zenburn-256.theme
+
+# Weeks start on Monday
+weekstart=Monday
+
+# Taskd
+taskd.certificate=~/.taskwarrior/peter.cert.pem
+taskd.key=~/.taskwarrior/peter.key.pem
+taskd.ca=~/.taskwarrior/ca.cert.pem
+taskd.server=task.havenaut.net:21348
+taskd.credentials=havenaut/peter/4a50a9e8-b1c3-4e77-94b1-92b720728d04

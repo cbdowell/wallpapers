@@ -1,0 +1,284 @@
+#  _ _____                    __ _
+# (_)___ /    ___ ___  _ __  / _(_) __ _
+# | | |_ \   / __/ _ \| '_ \| |_| |/ _` |
+# | |___) | | (_| (_) | | | |  _| | (_| |
+# |_|____/   \___\___/|_| |_|_| |_|\__, |
+#                                  |___/
+
+# Default modkey
+set $mod Mod4
+
+# Hide titlebar
+new_window pixel
+
+# i3-gaps
+gaps inner 2
+
+
+#  __
+# |__  _ _|_ _
+# |(_)| | | _)
+#
+
+font pango: FuraMono Nerd Font 12
+
+
+#  __
+# / _  _  _  _
+# \__)(_||_)_)
+#        |
+
+gaps inner 2
+gaps outer 2
+
+smart_gaps on
+smart_borders on
+
+for_window [class="^.*"] border pixel $window_border
+
+
+#  __
+# /   _ |  _  _ _
+# \__(_)|_(_)| _)
+#
+
+set_from_resource $bg     color0 #0c0d09
+set_from_resource $fg     color7 #d1d4db
+set_from_resource $color1 color1 #C7663E
+set_from_resource $color4 color4 #867D86
+
+#                       |---- Titlebar ----|  |---- Frame ----|
+# Class                 Border  Backgr. Text  Indicator Border
+client.focused          $color1 $color1 $fg   $color4   $color1
+client.focused_inactive $color1 $bg     $fg   $color4   $bg
+client.unfocused        $color1 $bg     $fg   $color4   $bg
+client.urgent           $bg     $bg     $fg   $color4   $bg
+client.placeholder      $bg     $bg     $fg   $color4   $bg
+
+client.background       $bg
+
+#
+# \    / _  _|  _ _  _  _ _  _
+#  \/\/ (_)| |<_)|_)(_|(_(/__)
+#                |
+
+set $ws1 "1:"
+set $ws2 "2:"
+set $ws3 "3:"
+set $ws4 "4:"
+set $ws5 "5:"
+set $ws6 "6:"
+set $ws7 "7:"
+set $ws8 "8:"
+set $ws9 "9:"
+set $ws0 "0:"
+
+# assign workspace to output
+workspace $ws1 output eDP1
+workspace $ws2 output VGA1
+workspace $ws3 output VGA1
+workspace $ws4 output VGA1
+workspace $ws5 output VGA1
+workspace $ws6 output VGA1
+workspace $ws7 output VGA1
+workspace $ws8 output VGA1
+workspace $ws9 output VGA1
+workspace $ws0 output VGA1
+
+# Switch to workspace
+bindsym $mod+1 workspace $ws1
+bindsym $mod+2 workspace $ws2
+bindsym $mod+3 workspace $ws3
+bindsym $mod+4 workspace $ws4
+bindsym $mod+5 workspace $ws5
+bindsym $mod+6 workspace $ws6
+bindsym $mod+7 workspace $ws7
+bindsym $mod+8 workspace $ws8
+bindsym $mod+9 workspace $ws9
+bindsym $mod+0 workspace $ws0
+
+# Move focused container to workspace
+bindsym $mod+Shift+1 move container to workspace $ws1
+bindsym $mod+Shift+2 move container to workspace $ws2
+bindsym $mod+Shift+3 move container to workspace $ws3
+bindsym $mod+Shift+4 move container to workspace $ws4
+bindsym $mod+Shift+5 move container to workspace $ws5
+bindsym $mod+Shift+6 move container to workspace $ws6
+bindsym $mod+Shift+7 move container to workspace $ws7
+bindsym $mod+Shift+8 move container to workspace $ws8
+bindsym $mod+Shift+9 move container to workspace $ws9
+bindsym $mod+Shift+0 move container to workspace $ws0
+
+
+#            __
+# |_/ _     |__). _  _|. _  _  _
+# | \(/_\/  |__)|| |(_||| |(_|_)
+#       /                   _|
+
+# window focus follows mouse movements
+focus_follows_mouse no
+
+# Reload the configuration file
+bindsym $mod+Shift+c reload
+
+# Restart i3 inplace (preserves your layout/session, can be used to upgrade i3)
+bindsym $mod+Shift+r restart
+
+# Exit i3 (logs you out of your X session)
+bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
+
+# Use Mouse+$mod to drag floating windows to their wanted position
+floating_modifier $mod
+
+
+#
+#  /\  _  _ | . _ _ _|_. _  _  _
+# /--\|_)|_)|_|(_(_| | |(_)| |_)
+#     |  |
+
+# Start a terminal
+bindsym $mod+Return exec tilix
+
+# Kill focused window
+bindsym $mod+Shift+q kill
+
+# Start rofi windows
+bindsym $mod+d exec rofi -show drun
+
+# mpd-rofi (clerk)
+bindsym Mod1+Shift+m exec --no-startup-id clerk
+
+# Start Privs File Manager
+bindsym $mod+Shift+F3 exec pcmanfm_pkexec
+
+# Move between windows
+bindsym $mod+j focus left
+bindsym $mod+k focus down
+bindsym $mod+l focus up
+bindsym $mod+semicolon focus right
+
+# Alternatively, you can use the cursor keys:
+bindsym $mod+Left focus left
+bindsym $mod+Down focus down
+bindsym $mod+Up focus up
+bindsym $mod+Right focus right
+
+# Move focused window
+bindsym $mod+Shift+j move left
+bindsym $mod+Shift+k move down
+bindsym $mod+Shift+l move up
+bindsym $mod+Shift+semicolon move right
+
+# Alternatively, you can use the cursor keys:
+bindsym $mod+Shift+Left move left
+bindsym $mod+Shift+Down move down
+bindsym $mod+Shift+Up move up
+bindsym $mod+Shift+Right move right
+
+# Split in horizontal orientation
+bindsym $mod+h split h
+
+# Split in vertical orientation
+bindsym $mod+v split v
+
+# Enter fullscreen mode for the focused container
+bindsym $mod+f fullscreen toggle
+
+# Change container layout (stacked, tabbed, toggle split)
+bindsym $mod+s layout stacking
+bindsym $mod+w layout tabbed
+bindsym $mod+e layout toggle split
+
+# Toggle tiling / floating
+bindsym $mod+Shift+space floating toggle
+
+# Change focus between tiling / floating windows
+bindsym $mod+space focus mode_toggle
+
+# Focus the parent container
+bindsym $mod+a focus parent
+
+# Always open some programs on specified workspace
+assign [class="firefox"] $ws1
+assign [class="code"]	 $ws2
+assign [class="tilix"]	 $ws3
+assign [class="thunar"]	 $ws4
+assign [class="spotify"] $ws0
+
+# Enable float for some windows
+for_window [class="^Pavucontrol$"]                                                   floating enable
+for_window [class="^Arandr$"]                                                        floating enable
+for_window [class="^Steam$" title="^Friends List$"]                                  floating enable
+for_window [class="^Steam$" title="Steam - News"]                                    floating enable
+for_window [class="^Steam$" title=".* - Chat"]                                       floating enable
+for_window [class="^Steam$" title="^Settings$"]                                      floating enable
+for_window [class="^Steam$" title=".* - event started"]                              floating enable
+for_window [class="^Steam$" title=".* CD key"]                                       floating enable
+for_window [class="^Steam$" title="^Steam - Self Updater$"]                          floating enable
+for_window [class="^Steam$" title="^Screenshot Uploader$"]                           floating enable
+for_window [class="^Steam$" title="^Steam Guard - Computer Authorization Required$"] floating enable
+for_window [title="^Steam Keyboard$"]                                                floating enable
+
+
+#  __
+# |_    _  __|_. _  _   |_/ _    _
+# | |_|| |(_ | |(_)| |  | \(/_\/_)
+#                             /
+
+# volume control
+bindsym XF86AudioRaiseVolume exec amixer -q set Master 2%+ unmute
+bindsym XF86AudioLowerVolume exec amixer -q set Master 2%- unmute
+bindsym XF86AudioMute        exec amixer -q set Master toggle
+
+# media player controls
+bindsym XF86AudioPlay        exec mpc toggle
+bindsym XF86AudioPause       exec mpc pause
+bindsym XF86AudioNext        exec mpc next
+bindsym XF86AudioPrev        exec mpc prev
+
+# screenshot
+bindsym Print                exec scrot $HOME/Bilder/Screenshots/`date +%Y-%m-%d_%H:%M:%S`.png
+bindsym Mod1+Print           exec scrot -u $HOME/Bilder/Screenshots/`date +%Y-%m-%d_%H:%M:%S`.png
+bindsym Mod1+Shift+Print     exec scrot -s $HOME/Bilder/Screenshots/`date +%Y-%m-%d_%H:%M:%S`.png
+
+
+#
+# |\/| _  _| _  _
+# |  |(_)(_|(/__)
+#
+
+# Resize window (you can also use the mouse for that)
+set $mode_resize " Resize"
+mode $mode_resize {
+    # Resize with the arrow keys
+    bindsym Left  resize shrink width  2 px or 2 ppt
+    bindsym Down  resize grow   height 2 px or 2 ppt
+    bindsym Up    resize shrink height 2 px or 2 ppt
+    bindsym Right resize grow   width  2 px or 2 ppt
+
+    # Back to normal: Enter or Escape
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+
+
+#
+#  /\    _|_ _  __|_ _  __|_
+# /--\|_| | (_)_) | (_||  |
+#
+
+exec --no-startup-id xrandr --output eDP1 --primary --mode 1366x768 --pos 0x0 --rotate normal --output VGA1 --mode 1360x768 --pos 1366x0 --rotate normal
+exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+exec --no-startup-id nm-applet
+exec --no-startup-id xfce4-power-manager
+exec --no-startup-id pamac-tray
+exec --no-startup-id clipit
+exec --no-startup-id volumeicon
+exec --no-startup-id nitrogen --restore; sleep 1; compton -b
+
+# launch dunst
+exec_always killall dunst; dunst -config ~/.config/dunst/dunstrc
+
+exec_always --no-startup-id ff-theme-util
+exec_always --no-startup-id fix_xcursor
+exec_always --no-startup-id start_polybar

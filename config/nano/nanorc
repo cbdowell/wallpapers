@@ -1,0 +1,84 @@
+#
+#    ____ _____    ____   ____
+#   /    \\__  \  /    \ /  _ \
+#  |   |  \/ __ \|   |  (  <_> )
+#  |___|  (____  /___|  /\____/
+#       \/     \/     \/
+
+# include syntax highlighting
+include "/usr/share/nano/*.nanorc"
+include "~/.config/nano/syntax/*.nanorc"
+
+# use 4 spaces as tab
+set tabsize 4
+set tabstospaces
+
+# smooth scrolling
+set smooth
+
+# auto indent
+set autoindent
+
+# enable line numbers
+set linenumbers
+
+# disable backups
+unset backup
+
+
+set atblanks
+set boldtext
+set brackets ""')>]}"
+set constantshow
+set cutfromcursor
+set fill -1
+set functioncolor green
+set historylog
+set keycolor cyan
+set locking
+set morespace
+set mouse
+set numbercolor cyan
+set positionlog
+set punct "!.?"
+set quotestr "> "
+set selectedcolor brightwhite,magenta
+set showcursor
+set smarthome
+set softwrap
+set speller "aspell -x -c"
+set statuscolor brightwhite,green
+set titlecolor brightwhite,blue
+set wordbounds
+
+
+#  ___.   .__            .___.__
+#  \_ |__ |__| ____    __| _/|__| ____    ____  ______
+#   | __ \|  |/    \  / __ | |  |/    \  / ___\/  ___/
+#   | \_\ \  |   |  \/ /_/ | |  |   |  \/ /_/  >___ \
+#   |___  /__|___|  /\____ | |__|___|  /\___  /____  >
+#       \/        \/      \/         \//_____/     \/
+
+# undo with ctrl+z
+bind ^Z undo all
+
+# redo with ctrl+y
+bind ^Y redo all
+
+# search with ctrl+f
+bind ^F whereis all
+
+# previous finding
+bind ^P findprevious all
+
+# next finding
+bind ^N findnext all
+
+# search and replace with ctrl+r
+bind ^R replace all
+
+# goto line with ctrl+g
+bind ^G gotoline all
+
+# unindent
+bind ^A unindent all
