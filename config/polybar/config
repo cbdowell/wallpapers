@@ -8,12 +8,12 @@
 
 [colors]
 
-    background          = ${xrdb:color8:#929499}
-    foreground          = ${xrdb:color15:#d1d4db}
-    active              = #C7663E
-    inactive            = #C7663E
-    highlight           = ${xrdb:color2:#996661}
-    error               = ${xrdb:color9:#C7663E}
+    background          = ${xrdb:color8:#9c918a}
+    foreground          = ${xrdb:color15:#dfd0c6}
+    active              = #634F62
+    inactive            = #634F62
+    highlight           = ${xrdb:color2:#AB5947}
+    error               = ${xrdb:color9:#634F62}
 
 
 [bar/base]

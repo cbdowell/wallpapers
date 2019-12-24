@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+# https://sanctum.geek.nz/arabesque/gnu-linux-crypto-gnupg-keys/
+gpg --armor --export F90F203F56B69F7E061953707539257A72DDC56E > cbdowell.public.asc

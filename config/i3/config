@@ -20,7 +20,7 @@ gaps inner 2
 # |(_)| | | _)
 #
 
-font pango: FuraMono Nerd Font 12
+font pango: Fira Code 12
 
 
 #  __
@@ -42,20 +42,24 @@ for_window [class="^.*"] border pixel $window_border
 # \__(_)|_(_)| _)
 #
 
-set_from_resource $bg     color0 #0c0d09
-set_from_resource $fg     color7 #d1d4db
-set_from_resource $color1 color1 #C7663E
-set_from_resource $color4 color4 #867D86
+#Importing colors from .Xresources
 
-#                       |---- Titlebar ----|  |---- Frame ----|
-# Class                 Border  Backgr. Text  Indicator Border
-client.focused          $color1 $color1 $fg   $color4   $color1
-client.focused_inactive $color1 $bg     $fg   $color4   $bg
-client.unfocused        $color1 $bg     $fg   $color4   $bg
-client.urgent           $bg     $bg     $fg   $color4   $bg
-client.placeholder      $bg     $bg     $fg   $color4   $bg
+set_from_resource $bg     i3wm.color3  #ff0000
+set_from_resource $bg-alt i3wm.color0  #ff0000
+set_from_resource $fg     i3wm.color15 #ff0000
+set_from_resource $fg-alt i3wm.color2  #ff0000
+set_from_resource $hl     i3wm.color4  #ff0000
 
-client.background       $bg
+# Applying these colors to UI elements
+
+# class                 border  backgr. text indicator      child_border
+client.focused          $fg-alt $bg     $fg  $fg-alt        $hl
+client.focused_inactive $bg     $bg-alt $fg  $bg            $bg
+client.unfocused        $bg     $bg-alt $fg  $bg            $bg
+client.urgent           $bg     $bg-alt $fg  $bg            $bg
+client.placeholder      $bg     $bg-alt $fg  $bg            $bg
+
+client.background $bg
 
 #
 # \    / _  _|  _ _  _  _ _  _
@@ -274,11 +278,12 @@ exec --no-startup-id xfce4-power-manager
 exec --no-startup-id pamac-tray
 exec --no-startup-id clipit
 exec --no-startup-id volumeicon
-exec --no-startup-id nitrogen --restore; sleep 1; compton -b
+# exec --no-startup-id nitrogen --restore; sleep 1; compton -b
 
 # launch dunst
 exec_always killall dunst; dunst -config ~/.config/dunst/dunstrc
 
 exec_always --no-startup-id ff-theme-util
 exec_always --no-startup-id fix_xcursor
-exec_always --no-startup-id start_polybar
+exec_always --no-startup-id ~/.config/polybar/launch.sh
+

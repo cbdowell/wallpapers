@@ -6,12 +6,4 @@
 ! Author: Christopher Dowell
 ! License: MIT
 
-! rofi.modi: drun,ssh
-! rofi.terminal: urxvt
-
-rofi.theme: ~/.cache/wal/colors-rofi.rasi
-
-rofi.modi: window,run,ssh,drun,combi
-rofi.lines: 10
-rofi.case-sensitive: false
-rofi.matching: fuzzy
+rofi.theme: ~/.cache/wal/colors-rofi-dark.rasi

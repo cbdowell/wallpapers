@@ -1,0 +1,10 @@
+# All the following command work as well with multiple package names
+
+# To search for a package
+bat -Ss <package name>
+
+# To update the local package base and upgrade all out of date packages
+bat -Suy
+
+# To install a package
+bat -S <package name>

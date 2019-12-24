@@ -3,8 +3,8 @@
  * https://github.com/thestinger/termite/#padding.
  */
 
- vte-terminal {
-    padding: 0px;
- }
+VteTerminal, vte-terminal {
+    padding: 2rem;
+}
 
  /* vim: set tw=90 sts=-1 sw=3 et: */

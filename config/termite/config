@@ -1,57 +1,43 @@
+
 [options]
-resize_grip = false
-scroll_on_output = false
-scroll_on_keystroke = true
-audible_bell = false
-visible_bell = true
-mouse_autohide = false
-allow_bold = true
-dynamic_title = true
-urgent_on_bell = true
-clickable_url = true
-font = Inconsolata Regular 14
-scrollback_lines = 1000
-search_wrap = true
 
-cursor_blink = off
+    font              = FuraMono Nerd Font 12
 
-# "block", "underline" or "ibeam"
-cursor_shape = block
-
-browser = xdg-open
 
 [colors]
-# Solarized dark color scheme
-foreground = #839496
-foreground_bold = #eee8d5
-#foreground_dim = #888888
-background = #002b36
-cursor = #93a1a1
 
-# if unset, will reverse foreground and background
-#highlight = #839496
+    foreground        = #dfd0c6
+    foreground_bold   = #56628F
+    cursor            = #56628F
+    cursor_foreground = #0C0511
+    background        = #0C0511
 
-# colors from color0 to color254 can be set
-color0 = #073642
-color1 = #dc322f
-color2 = #859900
-color3 = #b58900
-color4 = #268bd2
-color5 = #d33682
-color6 = #2aa198
-color7 = #eee8d5
-color8 = #002b36
-color9 = #cb4b16
-color10 = #586e75
-color11 = #657b83
-color12 = #839496
-color13 = #6c71c4
-color14 = #93a1a1
-color15 = #fdf6e3
+    # Black, Gray, Silver, White
+    color0            = #0C0511
+    color8            = #9c918a
+    color7            = #dfd0c6
+    color15           = #dfd0c6
 
-[hints]
-foreground = #839496
-background = #002b36
-border = #93a1a1
-active_background = #b58900
-active_foreground = #073642
+    # Red
+    color1            = #634F62
+    color9            = #634F62
+
+    # Green
+    color2            = #AB5947
+    color10           = #AB5947
+
+    # Yellow
+    color3            = #996262
+    color11           = #996262
+
+    # Blue
+    color4            = #CE9371
+    color12           = #CE9371
+
+    # Purple
+    color5            = #56628F
+    color13           = #56628F
+
+    # Teal
+    color6            = #8F7A93
+    color14           = #8F7A93

@@ -1,0 +1,907 @@
+packages-add() {
+    echo $@ >> ~/sources/dotfiles/packages
+}
+
+man-find() {
+    man --regex -wK "$@" \
+        | sed 's#.*/##g' \
+        | cut -d. -f1 \
+        | uniq
+}
+
+man-directive() {
+    man $1 | less +"/^\s{7}$2\s"
+}
+
+sed-replace() {
+    local from=$(sed 's@/@\\/@g' <<< "$1")
+    shift
+
+    local to=""
+    if [ $# -ne 0 ]; then
+        to=$(sed 's@/@\\/@g' <<< "$1")
+        shift
+    fi
+
+    if [ $# -ne 0 ]; then
+        local diff=false
+        local files=()
+        for file in $@; do
+            if [ "$file" = "!" ]; then
+                diff=true
+            else
+                files+=("$file")
+            fi
+        done
+
+        for file in "${files[@]}"; do
+            if $diff; then
+                after=$(mktemp -u)
+                sed -r "s/$from/$to/g" $file > $after
+                git diff --color $file $after | diff-so-fancy
+            else
+                sed -ri "s/$from/$to/g" $file
+            fi
+        done
+
+    else
+        sed -r "s/$from/$to/g"
+    fi
+}
+
+
+cut-d-t() {
+    local d="$1"
+    shift
+    cut -d"$d" -f"$@"
+}
+
+find() {
+    ag -f -l -U -g "$*" --nocolor
+}
+
+xargs-eval() {
+    local pass_stdin=false
+    if [ "$1" = "-" ]; then
+        pass_stdin=true
+        shift
+    fi
+
+    local cmd="$(sed 's/@/"@"/g' <<< $@)"
+
+    local line="{ $cmd ; }"
+    if $pass_stdin; then
+        line="$line <<< '@'"
+    fi
+
+    local main_input="$(cat)"
+
+    xargs -n1 -I@ echo "$line" <<< "$main_input" \
+        | while read subcmd; do
+            eval "(${subcmd[@]})" </dev/tty
+        done
+}
+
+cd-and-ls() {
+    cd $@ && ls -lah --color=always
+}
+
+git-clone-github() {
+    local uri="$1"
+    local dir="$2"
+    local user=$(cut -d/ -f1 <<< "$uri")
+    local project=$(cut -d/ -f2 <<< "$uri")
+
+    if ! grep -q "/" <<< "$uri"; then
+        project="$user"
+        user="kovetskiy"
+    fi
+    if [[ "$user" = "s" ]]; then
+        user="seletskiy"
+    fi
+    if [[ "$user" = "r" ]]; then
+        user="reconquest"
+    fi
+    if [[ "$user" = "k" ]]; then
+        user="kovetskiy"
+    fi
+
+    uri="https://github.com/$user/$project"
+    echo "$uri"
+    git clone "$uri" $dir
+}
+
+git-checkout-orphan() {
+    git checkout --orphan "$1"
+    git status -s | awk '{print $2}' | xargs -n1 rm -rf
+    git add .
+}
+
+git-create-and-commit-empty-gitignore() {
+    gcor $1
+    touch .gitignore
+    git add .gitignore
+    git commit -m ".gitignore added"
+}
+
+alias-grep() {
+    local query="$*"
+    if declare -f "$query" 2>/dev/null; then
+        return
+    fi
+
+    alias | grep -F -- "$*"
+}
+
+git-remote-set-origin-me() {
+    if ! git remote | grep -q upstream; then
+        git remote rename origin upstream
+    fi
+    local new_url=$(
+        git remote show -n upstream \
+        | awk '/Fetch URL:/{print $3}' \
+        | sed-replace '([:/])([a-zA-Z0-9_-]+)/(\w+)' '\1me/\3'
+    )
+    git remote rm origin
+    echo "$new_url"
+    git remote add origin "$new_url"
+}
+
+go-get-enhanced() {
+    if [ $# -eq 0 ]; then
+        go get
+        return
+    fi
+
+    local url=""
+    local dir=""
+    local flags=("-v")
+    local update=false
+    if [ "$1" = "u" -o "$1" = "-u" -o "$1" = "-" ]; then
+        flags+=("-u")
+        update=true
+        shift
+    fi
+
+    if [ $# -eq 0 ]; then
+        go get ${flags[@]}
+        return
+    fi
+
+    import=$(sed 's/.*:\/\///' <<< "$1")
+    shift
+
+    flags+=("$@")
+    local slashes=$(grep -o '/'  <<< "$import" | wc -l)
+    if [ $slashes = 1 ]; then
+        user=$(cut -d/ -f1 <<< "$import")
+        repo=$(cut -d/ -f2 <<< "$import")
+        case "$user" in
+            s)
+                import="seletskiy/$repo"
+                ;;
+
+            r)
+                import="reconquest/$repo"
+                ;;
+
+            d)
+                import="deadcrew/$repo"
+                ;;
+        esac
+
+        import="github.com/$import"
+    fi
+
+    if $update && [ $slashes = 0 ]; then
+        dependency_import=$(
+            go list -f \
+                '{{ range $dep := .Deps }}{{ $dep }}{{ "\n" }}{{ end }}' . \
+                | awk "/\/$import\$/ { print }"
+        )
+        if [ "$dependency_import" ]; then
+            import=$dependency_import
+        fi
+    fi
+
+    if [ ! "$dependency_import" ] && [ $slashes = 0 ]; then
+        import="github.com/kovetskiy/$import"
+    fi
+
+    go get ${flags[@]} $import
+
+    dir=$GOPATH/src/$import
+    if [[ "$dir" == *.git ]]; then
+        dir=$(sed 's/\.git//' <<< "$dir")
+    fi
+
+    if [ -d $dir ]; then
+        cd $dir
+        git submodule update --init
+    fi
+}
+
+create-and-change-directory() {
+    mkdir -p "$@"
+    cd "$@"
+}
+
+aur-create-project() {
+    local package="$1"
+
+    if [[ "$package" == "" || "$package" == "-h" ]]; then
+        echo "aur-create-project <package> [<file>]..."
+        return
+    fi
+
+    local dir=$(mktemp -d --suffix=$package)
+    local url="ssh://aur@aur.archlinux.org/$package.git"
+
+    git clone $url $dir
+
+    if [[ $# -gt 1 ]]; then
+        while shift &>/dev/null; do
+            cp -r $1 $dir/
+        done
+    fi
+
+    cd $dir
+}
+
+aur-import-project-golang() {
+    local package="$1"
+    local desc="$2"
+    local git="$3"
+
+    if [[ "$package" == "" || "$package" == "-h" ]]; then
+        echo "aur-import-project-golang <package> <description> <url>"
+        return
+    fi
+
+    local dir=$(mktemp -d --suffix=$package)
+
+    local url="ssh://aur@aur.archlinux.org/$package.git"
+
+    git clone $url $dir
+    cd $dir
+
+    git=$(sed-replace 'https?://' 'git://' <<< "$git")
+
+    go-makepkg -n "$package" -d . -c "$desc" "$git"
+    mksrcinfo
+    git add PKGBUILD .SRCINFO
+}
+
+aur-clone() {
+    local package=$1
+
+    :sources:get "ssh://aur@aur.archlinux.org/$package.git"
+}
+
+cd-pkgbuild() {
+    local dir=$(basename "$(pwd)")
+    if grep -q '\-pkgbuild' <<< "$dir"; then
+        cd ../$(sed -r 's/\-pkgbuild//g' <<< "$dir")
+        return
+    fi
+
+    local dir_pkgbuild="${dir}-pkgbuild"
+
+    if [ -d "../$dir_pkgbuild" ]; then
+        cd "../$dir_pkgbuild"
+        return
+    fi
+
+    cp -r "../$dir" "../$dir_pkgbuild"
+
+    cd "../$dir_pkgbuild"
+
+    if [ "$(git rev-parse --abbrev-parse HEAD)" = "pkgbuild" ]; then
+        return
+    fi
+
+    git fetch
+
+    if git branch -a | grep -q pkgbuild; then
+        git stash
+        git checkout pkgbuild
+        git-clean-powered
+        return
+    fi
+
+    git-checkout-orphan pkgbuild
+}
+
+go-makepkg-enhanced() {
+    if [[ "$1" = "-h" || $# == 0 ]]; then
+        echo "<package> <description> [repo]" >&2
+        return 1
+    fi
+
+    local package="$1"
+    mkdir -p /tmp/go-makepkg-$package/
+    cd /tmp/go-makepkg-$package/
+    local description="$2"
+    local repo="$3"
+    shift 2
+
+    if [ "$repo" ]; then
+        shift
+    else
+        repo=$(git remote get-url origin)
+    fi
+
+    if grep -q "github.com" <<< "$repo"; then
+        repo=$(sed-replace '.*@' 'git://' <<< "$repo")
+        repo=$(sed-replace '.*://' 'git://' <<< "$repo")
+    fi
+
+    go-makepkg -g -c -n "$package" -d . $(echo $FLAGS) "$description" "$repo" $@
+}
+
+copy-to-clipboard() {
+    if [ $# -ne 0 ]; then
+        if [ -e "$1" ]; then
+            xclip -selection clipboard < "$1"
+        else
+            xclip -selection clipboard <<< "$@"
+        fi
+    else
+        xclip -selection clipboard
+    fi
+
+    xclip -o -selection clipboard | xclip -selection primary
+}
+
+restore-pkgver-pkgrel() {
+    sed-replace 'pkgver=.*' 'pkgver=${PKGVER:-autogenerated}' ${1:-PKGBUILD}
+    sed-replace 'pkgrel=.*' 'pkgrel=${PKGREL:-1}' ${1:-PKGBUILD}
+}
+
+migrate-to-deadfiles() {
+    (
+        local dotfiles=~/dotfiles
+        local deadfiles=~/deadfiles
+
+        for file in $@; do
+            mv $dotfiles/$file $deadfiles/$file
+        done
+
+        cd $deadfiles
+        git add .
+        git commit -m "$@ migrated from kovetskiy/dotfiles"
+        git push origin master || return 1
+        #git stash pop
+
+        cd $dotfiles
+        git add .
+        git commit -m "$@ migrated to deadcrew/deadfiles"
+        git push origin master || return 1
+        #git stash pop
+    )
+}
+
+github-browse() {
+    local file="$1"
+    local line="${2:+#L$2}"
+    hub browse -u -- blob/$(git rev-parse --abbrev-ref HEAD)/$file$line
+}
+
+git-pull() {
+    local origin="origin"
+    local branch=$(:git:branch)
+
+    if [ $# -ne 0 ]; then
+        local option=$1
+        if [ "$option" = "upstream" ]; then
+            origin=$option
+        else
+            branch=$option
+        fi
+    fi
+
+    git pull --stat --rebase $origin $branch
+}
+
+aur-get-sources() {
+    local package=$1
+    cd /tmp/
+    yay -G -a "$package"
+    cd "$package"
+    cat PKGBUILD
+}
+
+git-rebase-interactive() {
+    if [[ "$1" =~ ^[0-9]+$ ]]; then
+        git rebase -i "HEAD~$1"
+        return $?
+    fi
+
+    git rebase -i $@
+}
+
+git-clean-powered() {
+    git clean -ffdx
+}
+
+ssh-enhanced() {
+    local hostname="$1"
+    tmux set status on
+    tmux set status-left "# $hostname"
+    smash -z "$@"
+    tmux set status off
+}
+
+makepkg-clean() {
+    local branch="$1"
+    rm -rf *.xz
+    rm -rf src pkg
+    BRANCH="$branch" makepkg -f
+    restore-pkgver-pkgrel
+}
+
+sed-files() {
+    local from="$1"
+    local to="$2"
+    shift 2
+    sed-replace "$from" "$to" $(sift "$from" -l) "$@"
+}
+
+sed-delete() {
+    local query="$1"
+    shift 1
+
+    delete_pattern="${query//\//\\/}"
+    sed -r -i "/${delete_pattern}/d" $(sift "$query" -l) "$@"
+}
+
+git-clone-sources() {
+    cd ~/sources/
+    git clone "$1"
+}
+
+cd-sources() {
+    cd ~/sources/"$@"
+}
+
+
+is-interactive() {
+    (
+        exec 9>&1
+        if [[ "$(readlink /dev/fd/9)" == *"pipe:"* ]]; then
+            return 1
+        else
+            return 0
+        fi
+    )
+    return $?
+}
+
+
+nmap:online() {
+    nmap -sP -PS22 $@ -oG - \
+        | awk '/Status: Up/{ print $2; }' \
+        | tee /dev/stderr \
+}
+
+sources:get() {
+    local dir=$(sources-get "${@}")
+    cd "${dir}"
+}
+
+aur:spawn() {
+    yes | EDITOR=cat pacaur "$@"
+}
+
+aur:search() {
+    local search=$(:aur:spawn -Ss "$@")
+    grep -P "$@|" <<< "$search"
+}
+
+aur:install-or-search() {
+    if [[ "$#" -eq 2 && "$2" == ":" ]]; then
+        :aur:search "$1"
+    else
+        :aur:spawn -S "$@"
+    fi
+}
+
+:git:master() {
+    git fetch && \
+        git checkout origin/master && \
+        git branch -D master && \
+        git checkout master
+
+    if [[ "$1" ]]; then
+        git checkout -b "$1"
+    fi
+}
+
+git:merge() {
+    local branch=$(:git:branch)
+    git checkout master
+    git merge origin/"$branch"
+}
+
+git:branch() {
+    git rev-parse --abbrev-ref HEAD
+}
+
+rtorrent:select() {
+    torrent=$(
+        find ~/Downloads/ -maxdepth 1 -type f -name '*.torrent' \
+            | while read filename; do
+            name=$(transmission-show "$filename" \
+                | grep -P '^Name: ' \
+                | sed -r 's/Name:\s+//')
+            echo "$(basename "$filename") :: $name"
+        done \
+            | fzf
+    )
+
+    if [[ "$torrent" ]]; then
+        torrent=$(sed 's/ :: .*$//' <<< "$torrent")
+        qbittorrent ~/Downloads/"$torrent"
+    fi
+}
+
+mplayer:run() {
+    #if [[ $# -eq 0 ]]; then
+        #mplayer $(/bin/ls | grep -vP '\.(jpg|jpeg|png|log|txt|cue)$')
+    #else
+        mplayer "$@"
+    #fi
+}
+
+zle -N :rtorrent:select
+
+move() {
+    local from=""
+    if [[ -f /var/run/user/$(id -u)/buffer-move ]]; then
+        from="$(cat /var/run/user/$(id -u)/buffer-move)"
+    fi
+
+    if [[ ! "$from" ]]; then
+        if [[ ! "$1" ]]; then
+            echo "target is not specified" >&2
+            return 1
+        fi
+
+        echo "$(readlink -f "$1")" > /var/run/user/$(id -u)/buffer-move
+        return 0
+    fi
+
+    to="$1"
+    if [[ ! "$to" ]]; then
+        to=$(basename "$from")
+    fi
+
+    echo "$from -> $to" >&2
+    mv "$from" "$to"
+    rm /var/run/user/$(id -u)/buffer-move
+}
+
+rsync() {
+    rsync -av --stats --progress "$@"
+}
+
+axel() {
+    local link=$1
+    local threads=${2:-10}
+
+    axel -a -n $threads "$link"
+}
+
+process:info() {
+    local name="$1"
+    local processes=$(pgrep -d, -x "$name")
+    if [[ ! "$processes" ]]; then
+        return 1;
+    fi
+
+    ps uf -p "$processes"
+}
+
+watcher() {
+    source ~/deadfiles/bin/watchit
+    :watchit "${@}"
+}
+
+process:kill() {
+    local name="$1"
+    if [[ ! "$name" ]]; then
+        echo "no name specified"
+        return 1
+    fi
+    pkill -9 "$name" || pkill -f -9 "$name"
+}
+
+gitignore:add() {
+    while [[ "$1" ]]; do
+        local filename="$1"
+        echo "$1" >> .gitignore
+        shift
+    done
+}
+
+pacman:filter-executable() {
+    while read package file; do
+        if [[ -f "$file" && -x "$file" ]]; then
+            echo "$package $file"
+        fi
+    done
+}
+
+mplayer:dir-audio() {
+    # subshell for trap
+    (
+        local playlist="$(mktemp)"
+        trap "rm $playlist" EXIT
+        while [[ "$1" ]]; do
+            find "${1:-.}" \
+                -type f \
+                -iregex ".*\.\(m4a\|aac\|flac\|mp3\|ogg\|wav\)$" \
+                -print0 \
+                | xargs -0 -n1 readlink -f \
+                | sort >> "$playlist"
+            shift
+        done
+
+        mplayer -novideo -playlist "$playlist"
+    )
+}
+
+copy-line() {
+    head -n "$1" | tail -n 1 | copy-to-clipboard
+}
+
+join_by() {
+    local d=$1;
+    shift;
+    echo -n "$1";
+    shift;
+    printf "%s" "${@/#/$d}";
+}
+
+search:go() {
+    EXT=go :search "${@}"
+}
+
+search() {
+    sift -s "${@}"
+}
+
+circleci:exec() {
+    circleci-cli --token-file ~/.config/circleci/token "${@}"
+}
+
+circleci:recent-build() {
+    watch -c -n0.0 circleci-recent-build
+}
+
+find-gem() {
+    if gem=$(gem list \
+        | grep "${1} " \
+        | sed 's/ (/-/' \
+        | sed 's/)//'); then
+        echo "gem: ${gem}"
+        cd /usr/lib/ruby/gems/2.5.0/gems/"$gem"
+    fi
+}
+
+
+ssha() {
+    if [[ ! "${_ssh_added}" ]]; then
+        eval "$(ssh-agent -s)"
+        ssh-add ~/.ssh/id_rsa
+        _ssh_added=true
+    fi
+    /bin/ssh -A "$@"
+}
+
+hosts:add() {
+    local server="$1"
+    local hostname="$2"
+
+    if ! grep -qP '^[0-9\.]+$' <<< "$server"; then
+        echo "$server is not an ip address" >&2
+        return 1
+    fi
+
+    echo "$server $hostname" | sudo tee -a /etc/hosts
+}
+
+git-commit-branch() {
+    local branch=$(git rev-parse --abbrev-ref HEAD)
+    git-commit "${branch}" "${@}"
+}
+
+until() {
+    until ! eval "${@}"; do
+        sleep 0.05
+    done
+}
+
+orgalorg:exec() {
+    zparseopts -D -E -- u:=username
+    orgalorg -y ${username:--uEgor.Kovetskiy} -x -C "${@}"
+}
+
+orgalorg:exec-stdin() {
+    zparseopts -D -E -- u:=username
+    orgalorg -y ${username:--uEgor.Kovetskiy} -x -s -C "${@}"
+}
+
+orgalorg:exec-host() {
+    local host="$1"
+    shift
+
+    :orgalorg:exec -o "${host}" "${@}"
+}
+
+
+clipboard-files() {
+    rm -rf /var/run/user/$UID/cbuffer/
+    mkdir /var/run/user/$UID/cbuffer/
+    cp -r "${@:-.}" /var/run/user/$UID/cbuffer/
+}
+
+paste-clipboard-files() {
+    local dest="${1:-.}"
+    dest=$(readlink -f "${dest}")
+    if [[ ! -d "${dest}" ]]; then
+        mkdir -p "${dest}"
+    fi
+
+    pushd /var/run/user/$UID/cbuffer
+    tree .
+    cp -r * "${dest}/"
+    cp -r .* "${dest}/" 2>/dev/null
+    popd
+}
+
+ssh-desk() {
+    ssh -t desk "cd $PWD; $SHELL -l ${@}"
+}
+
+helm-context() {
+    helm --kube-context "${@}"
+}
+
+kail-context() {
+    local context="$1"
+    shift
+    kail --since 5m --context "${context}" "${@}"
+}
+
+set_title() {
+    printf "\033]0;%s\007" "${1}"
+}
+
+preexec() {
+    set_title "${1}"
+}
+
+getlocation() { lynx -dump http://www.ip-adress.com/ip_tracer/?QRY=$1|grep address|egrep 'city|state|country'|awk '{print $3,$4,$5,$6,$7,$8}'|sed 's\ip address flag \\'|sed 's\My\\';}
+mcd() { mkdir -p "$1"; cd "$1";}
+cls() { cd "$1"; ls;}
+crun() { make "$1"; ./$1;}
+backup() { cp "$1"{,.bak};}
+md5check() { md5sum "$1" | grep "$2";}
+ctree() { cd "$1"; ls -R | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'; cd -; }
+extract() {
+    if [ -f $1 ] ; then
+        case $1 in
+            *.tar.bz2)  tar xjf $1      ;;
+            *.tar.gz)   tar xzf $1      ;;
+            *.tar.xz)   tar xf $1       ;;
+            *.bz2)      bunzip2 $1      ;;
+            *.rar)      unrar e $1      ;;
+            *.gz)       gunzip $1       ;;
+            *.tar)      tar xf $1       ;;
+            *.tbz2)     tar xjf $1      ;;
+            *.tgz)      tar xzf $1      ;;
+            *.txz)      tar xf $1       ;;
+            *.zip)      unzip $1        ;;
+            *.z)        uncompress $1   ;;
+            *.7z)       7z x $1         ;;
+            *.jar)      jar xf $1       ;;
+            *)  echo "'$1' cannot be extracted via extract()"
+            esac
+    else
+        echo "'$1' is not a valid file"
+    fi
+}
+
+#C compiling shortcuts for clang and gcc
+clang() {
+    if [[ $1 =~ \.c$ ]]; then
+        clang-3.5 -g $1 -o ${1%%.*};
+    else
+        echo "$1 is not a c file"
+    fi
+}
+
+clanglm() {
+    if [[ $1 =~ \.c$ ]]; then
+        clang-3.5 -g $1 -o ${1%%.*} -lm;
+    else
+        echo "$1 is not a c file"
+    fi
+}
+
+gccc() {
+    if [[ $1 =~ \.c$ ]]; then
+        gcc -std=c99 -Wall -pedantic -Wextra -Werror -O2 -g $1 -o ${1%%.*};
+    else
+        echo "$1 is not a c file"
+    fi
+}
+
+gcclm() {
+    if [[ $1 =~ \.c$ ]]; then
+        gcc -std=c99 -g $1 -o ${1%%.*} -lm;
+    else
+        echo "$1 is not a c file"
+    fi
+}
+
+## FZF FUNCTIONS ##
+
+# fo [FUZZY PATTERN] - Open the selected file with the default editor
+#   - Bypass fuzzy finder if there's only one match (--select-1)
+#   - Exit if there's no match (--exit-0)
+fo() {
+    local files
+    IFS=$'\n' files=($(fzf-tmux --query="$1" --multi --select-1 --exit-0))
+    [[ -n "$files" ]] && ${EDITOR:-vim} "${files[@]}"
+}
+
+# fh [FUZZY PATTERN] - Search in command history
+fh() {
+    print -z $( ([ -n "$ZSH_NAME" ] && fc -l 1 || history) | fzf +s --tac | sed 's/ *[0-9]* *//')
+}
+
+# fbr [FUZZY PATTERN] - Checkout specified branch
+# Include remote branches, sorted by most recent commit and limited to 30
+fgb() {
+    local branches branch
+    branches=$(git for-each-ref --count=30 --sort=-committerdate refs/heads/ --format="%(refname:short)") &&
+    branch=$(echo "$branches" |
+        fzf-tmux -d $(( 2 + $(wc -l <<< "$branches") )) +m) &&
+    git checkout $(echo "$branch" | sed "s/.* //" | sed "s#remotes/[^/]*/##")
+}
+
+# tm [SESSION_NAME | FUZZY PATTERN] - create new tmux session, or switch to existing one.
+# Running `tm` will let you fuzzy-find a session mame
+# Passing an argument to `ftm` will switch to that session if it exists or create it otherwise
+ftm() {
+    [[ -n "$TMUX" ]] && change="switch-client" || change="attach-session"
+    if [ $1 ]; then
+        tmux $change -t "$1" 2>/dev/null || (tmux new-session -d -s $1 && tmux $change -t "$1"); return
+    fi
+    session=$(tmux list-sessions -F "#{session_name}" 2>/dev/null | fzf --exit-0) &&  tmux $change -t "$session" || echo "No sessions found."
+}
+
+# tm [SESSION_NAME | FUZZY PATTERN] - delete tmux session
+# Running `tm` will let you fuzzy-find a session mame to delete
+# Passing an argument to `ftm` will delete that session if it exists
+ftmk() {
+    if [ $1 ]; then
+        tmux kill-session -t "$1"; return
+    fi
+    session=$(tmux list-sessions -F "#{session_name}" 2>/dev/null | fzf --exit-0) &&  tmux kill-session -t "$session" || echo "No session found to delete."
+}
+
+# fuzzy grep via rg and open in vim with line number
+fgr() {
+    local file
+    local line
+
+    read -r file line <<<"$(rg --no-heading --line-number $@ | fzf -0 -1 | awk -F: '{print $1, $2}')"
+
+    if [[ -n $file ]]
+    then
+        vim $file +$line
+    fi
+}
