@@ -1,9 +1,0 @@
-!  ___      __ _
-! | _ \___ / _(_)
-! |   / _ \  _| |
-! |_|_\___/_| |_|
-!
-! Author: Christopher Dowell
-! License: MIT
-
-rofi.theme: ~/.cache/wal/colors-rofi-dark.rasi

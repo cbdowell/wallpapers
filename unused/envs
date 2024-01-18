@@ -1,9 +1,0 @@
-
-export HISTSIZE=100000
-export SAVEHIST=100000
-
-export HISTFILE=~/.guts/.history
-
-if [[ "$HISTFILE_OVERRIDE" ]]; then
-    export HISTFILE=$HISTFILE_OVERRIDE
-fi

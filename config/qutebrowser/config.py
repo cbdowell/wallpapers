@@ -1,1 +1,0 @@
-config.source('qutewal.py')

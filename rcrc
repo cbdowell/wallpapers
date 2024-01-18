@@ -1,4 +1,0 @@
-EXCLUDES="firefox local vscode Makefile unused"
-DOTFILES_DIRS="$HOME/dotfiles"
-UNDOTTED=".editorconfig bin"
-SYMLINK_DIRS="startpage"
